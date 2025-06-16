@@ -21,64 +21,17 @@ echo "######################################################"
 echo "Begin arcolinux-set-bootloader"
 echo "######################################################"
 
-echo "Writing grub to /bootloader"
-echo "grub" | dd of="/bootloader"
-
-echo "installing refind packages"
-if [ -f /boot/efi/EFI/refind/refind.conf ]; then
-
-	echo "removing grub"
-	pacman -R --noconfirm arcolinux-grub-theme-vimix-git
-	pacman -R --noconfirm arcolinux-bootloader-grub-git
-	if is_package_installed grub-customizer; then
-	    echo "Removing grub-customizer..."
-	    sudo pacman -R --noconfirm grub-customizer 
-	else
-	    echo "Grub-customizer is not installed, no need to remove."
-	fi
-	#keep last
-	pacman -R --noconfirm grub
-	rm -r /boot/grub
-	rm /etc/default/grub*
-
-	if [ -d /boot/efi/EFI/ArcoLinux ]; then
-		rm -r /boot/efi/EFI/ArcoLinux
-	fi
-
-	echo "installing refind packages"
-	pacman -U --noconfirm /usr/local/bin/arcolinux-refind-theme-arco*pkg.tar.zst
-	pacman -U --noconfirm /usr/local/bin/arcolinux-bootloader-refind-git*pkg.tar.zst
-	echo "Writing refind to /bootloader"
-	echo "refind" | dd of="/bootloader"
-
-fi
-echo "End installing refind packages"
-
 echo "installing systemd-boot packages"
 if [ -f /boot/efi/loader/loader.conf ]; then
 	
 	echo "removing grub"
-	pacman -R --noconfirm arcolinux-grub-theme-vimix-git
-	pacman -R --noconfirm arcolinux-bootloader-grub-git
-	if is_package_installed grub-customizer; then
-	    echo "Removing grub-customizer..."
-	    sudo pacman -R --noconfirm grub-customizer 
-	else
-	    echo "Grub-customizer is not installed, no need to remove."
-	fi
-	#keep last
 	pacman -R --noconfirm grub
-	rm -r /boot/grub
-	rm /etc/default/grub*
+	[ -d /boot/grub ] && rm -r /boot/grub
 
-	echo "installing systemd-boot packages"
-	pacman -U --noconfirm /usr/local/bin/pacman-hook-kernel-install*pkg.tar.zst
-	pacman -U --noconfirm /usr/local/bin/arcolinux-bootloader-systemd-boot-git*pkg.tar.zst
-	echo "Writing systemd-boot to /bootloader"
-	echo "systemd-boot" | dd of="/bootloader"
-
+	shopt -s nullglob
+	files=(/etc/default/grub*)
+	[ ${#files[@]} -gt 0 ] && rm "${files[@]}"
 fi
-echo "End installation systemd-boot packages"
 
 echo
 echo "#################################"
